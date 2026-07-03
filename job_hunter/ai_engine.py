@@ -40,7 +40,7 @@ def _safe_generate(client, prompt: str, retries: int = 5) -> str:
                 messages=[{"role": "user", "content": prompt}],
                 temperature=0.0
             )
-            time.sleep(2)  # OpenRouter free tier is ~20 RPM limit depending on model, let's be safe
+            time.sleep(6)  # OpenRouter free tier is strictly rate-limited (often 10-20 RPM). 6s = 10 RPM.
             return response.choices[0].message.content or ""
         except Exception as e:
             err = str(e).lower()

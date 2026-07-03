@@ -46,6 +46,17 @@ def save_cfg(cfg):
     with open(CONFIG_PATH, "w") as f:
         json.dump(cfg, f, indent=2)
 
+def _push_config(cfg_data):
+    """Helper to push config to GitHub."""
+    try:
+        pat  = st.secrets.get("GH_PAT", "")
+        repo = st.secrets.get("GITHUB_REPO", "")
+        if pat and repo:
+            from utils.github_sync import push_config
+            push_config(cfg_data, pat, repo)
+    except Exception:
+        pass
+
 cfg = load_cfg()
 
 # ── EXISTING PROFILES ────────────────────────────────────────
@@ -221,18 +232,6 @@ with st.form("upload_form", clear_on_submit=True):
                 st.markdown(tags, unsafe_allow_html=True)
 
             st.rerun()
-
-
-def _push_config(cfg_data):
-    """Helper to push config to GitHub."""
-    try:
-        pat  = st.secrets.get("GH_PAT", "")
-        repo = st.secrets.get("GITHUB_REPO", "")
-        if pat and repo:
-            from utils.github_sync import push_config
-            push_config(cfg_data, pat, repo)
-    except Exception:
-        pass
 
 # ── TIPS ─────────────────────────────────────────────────────
 with st.expander("💡 Tips for best results"):

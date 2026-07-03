@@ -27,7 +27,7 @@ def _get_client(api_key: str):
     return _client
 
 
-def _safe_generate(client, prompt: str, retries: int = 3) -> str:
+def _safe_generate(client, prompt: str, retries: int = 5) -> str:
     """Call Gemini with exponential backoff on rate-limit errors."""
     for attempt in range(retries):
         try:
@@ -35,12 +35,14 @@ def _safe_generate(client, prompt: str, retries: int = 3) -> str:
                 model="gemini-2.0-flash-lite",
                 contents=prompt
             )
+            # Free tier allows 15 RPM (1 request every 4 seconds)
+            time.sleep(4.1) 
             return response.text or ""
         except Exception as e:
             err = str(e)
             if "429" in err or "RESOURCE_EXHAUSTED" in err:
-                wait = 2 ** attempt * 5
-                logger.warning(f"[Gemini] Rate limit. Waiting {wait}s…")
+                wait = (2 ** attempt) * 10  # 10s, 20s, 40s, 80s
+                logger.warning(f"[Gemini] Rate limit (15 RPM). Waiting {wait}s…")
                 time.sleep(wait)
             else:
                 logger.error(f"[Gemini] Error: {e}")

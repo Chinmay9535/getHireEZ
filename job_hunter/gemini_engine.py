@@ -35,8 +35,8 @@ def _safe_generate(client, prompt: str, retries: int = 5) -> str:
                 model="gemini-2.0-flash-lite",
                 contents=prompt
             )
-            # Free tier allows 15 RPM (1 request every 4 seconds)
-            time.sleep(4.1) 
+            # Free tier allows 15 RPM. We use 10 RPM (6s sleep) to be extra safe
+            time.sleep(6) 
             return response.text or ""
         except Exception as e:
             err = str(e)

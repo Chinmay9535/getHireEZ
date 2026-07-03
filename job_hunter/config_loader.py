@@ -119,6 +119,11 @@ def get_gmail_app_password() -> str:
     return pwd
 
 
+def get_serpapi_key() -> str:
+    key = os.environ.get("SERPAPI_API_KEY", "")
+    return key
+
+
 def ensure_dirs():
     """Create necessary data directories if they don't exist."""
     for d in [DATA_DIR, REPORTS_DIR, RESUMES_DIR]:

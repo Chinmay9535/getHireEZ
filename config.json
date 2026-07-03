@@ -33,7 +33,8 @@
     "unstop": true,
     "cutshort": true,
     "yc_jobs": true,
-    "hackernews": true
+    "hackernews": true,
+    "serpapi": true
   },
   "resume_profiles": [
     {

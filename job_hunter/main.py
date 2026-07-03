@@ -22,7 +22,7 @@ logger = logging.getLogger("OpportunityBot")
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from job_hunter.config_loader import load_config, get_openrouter_api_key, get_gmail_app_password, ensure_dirs
+from job_hunter.config_loader import load_config, get_openrouter_api_key, get_gmail_app_password, get_serpapi_key, ensure_dirs
 from job_hunter.deduplicator import filter_new_jobs, mark_jobs_seen, clear_old_entries
 from job_hunter.ai_engine import (
     parse_resume, batch_match_jobs_against_all_profiles,
@@ -43,7 +43,7 @@ def gather_all_roles(config) -> list:
     return list(roles)
 
 
-def run_scrapers(config, roles: list) -> list:
+def run_scrapers(config, roles: list, serpapi_key: str = "") -> list:
     """Run all enabled scrapers and merge results."""
     all_jobs = []
     sources  = config.enabled_sources
@@ -129,6 +129,16 @@ def run_scrapers(config, roles: list) -> list:
         except Exception as e:
             logger.warning(f"[Main] HackerNews failed: {e}")
 
+    # ── SerpAPI (Google Jobs) ─────────────────────────────────
+    if sources.get("serpapi"):
+        try:
+            from job_hunter.scrapers.serpapi_scraper import scrape_serpapi
+            jobs = scrape_serpapi(roles, locations, serpapi_key)
+            all_jobs.extend(jobs)
+            logger.info(f"[Main] SerpAPI: {len(jobs)} jobs")
+        except Exception as e:
+            logger.warning(f"[Main] SerpAPI failed: {e}")
+
     logger.info(f"[Main] Total scraped: {len(all_jobs)} jobs")
     return all_jobs
 
@@ -176,6 +186,7 @@ def run():
     try:
         openrouter_key = get_openrouter_api_key()
         gmail_pwd  = get_gmail_app_password()
+        serpapi_key = get_serpapi_key()
     except EnvironmentError as e:
         logger.error(str(e))
         sys.exit(1)
@@ -190,11 +201,10 @@ def run():
         logger.error("No valid resumes found. Check files in resumes/ folder.")
         sys.exit(1)
 
-    # ── Gather roles and run scrapers ────────────────────────
-    roles = gather_all_roles(config)
-    logger.info(f"[Main] Target roles: {roles}")
-
-    all_jobs = run_scrapers(config, roles)
+    # ── Scrape ───────────────────────────────────────────────
+    all_roles = gather_all_roles(config)
+    logger.info(f"[Main] Target roles: {all_roles}")
+    all_jobs = run_scrapers(config, all_roles, serpapi_key)
 
     if not all_jobs:
         logger.warning("[Main] No jobs found from any source.")

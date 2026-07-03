@@ -144,6 +144,7 @@ source_info = {
     "cutshort":    ("Cutshort",    "Startups & GCCs",     "🔶"),
     "yc_jobs":     ("YC Jobs",     "Top Global Startups", "🏆"),
     "hackernews":  ("HackerNews",  "Tech Startups",       "🟡"),
+    "serpapi":     ("SerpAPI",     "Google Jobs Aggregator", "🔍"),
 }
 
 cols = st.columns(2)

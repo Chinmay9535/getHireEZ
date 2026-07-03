@@ -1,7 +1,7 @@
 """
 gemini_engine.py
 Core AI engine powering resume parsing and job-resume alignment scoring.
-Uses Google Gemini 1.5 Flash (free tier: 1500 req/day).
+Uses Google Gemini 1.5 Flash 8B (super lite, fast, free tier).
 """
 import json
 import time
@@ -22,17 +22,19 @@ _client = None
 def _get_client(api_key: str):
     global _client
     if _client is None:
-        import google.generativeai as genai
-        genai.configure(api_key=api_key)
-        _client = genai.GenerativeModel("gemini-1.5-flash")
+        from google import genai
+        _client = genai.Client(api_key=api_key)
     return _client
 
 
-def _safe_generate(model, prompt: str, retries: int = 3) -> str:
+def _safe_generate(client, prompt: str, retries: int = 3) -> str:
     """Call Gemini with exponential backoff on rate-limit errors."""
     for attempt in range(retries):
         try:
-            response = model.generate_content(prompt)
+            response = client.models.generate_content(
+                model="gemini-1.5-flash-8b",
+                contents=prompt
+            )
             return response.text or ""
         except Exception as e:
             err = str(e)
@@ -133,10 +135,10 @@ def parse_resume(pdf_path: Path, api_key: str) -> Dict:
     if not resume_text.strip():
         return {"error": "Could not extract text from PDF"}
 
-    model = _get_client(api_key)
+    client = _get_client(api_key)
     prompt = RESUME_PARSE_PROMPT.format(resume_text=resume_text[:6000])  # Cap to 6k chars
 
-    raw = _safe_generate(model, prompt)
+    raw = _safe_generate(client, prompt)
     parsed = _extract_json(raw)
 
     if not parsed:
@@ -195,7 +197,7 @@ def calculate_match(
     Score a single job against a single resume profile.
     Returns match result dict.
     """
-    model = _get_client(api_key)
+    client = _get_client(api_key)
 
     all_skills = (
         resume_profile.get("technical_skills", []) +
@@ -214,7 +216,7 @@ def calculate_match(
         description=job.get("description", "")[:2000],
     )
 
-    raw = _safe_generate(model, prompt)
+    raw = _safe_generate(client, prompt)
     result = _extract_json(raw)
 
     if not result or "match_percentage" not in result:
@@ -304,7 +306,7 @@ def generate_resume_tips(
     api_key: str,
 ) -> List[str]:
     """Generate actionable resume improvement suggestions."""
-    model = _get_client(api_key)
+    client = _get_client(api_key)
     from collections import Counter
     top_missing = [s for s, _ in Counter(missing_skills_list).most_common(15)]
 
@@ -319,7 +321,7 @@ def generate_resume_tips(
         current_skills=", ".join(current[:20]),
     )
 
-    raw = _safe_generate(model, prompt)
+    raw = _safe_generate(client, prompt)
     try:
         tips = json.loads(raw.strip())
         if isinstance(tips, list):

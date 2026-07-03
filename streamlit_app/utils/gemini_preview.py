@@ -31,9 +31,8 @@ def extract_skills_preview(pdf_bytes: bytes, gemini_api_key: str) -> Dict:
 
     # ── Call Gemini ──────────────────────────────────────────
     try:
-        import google.generativeai as genai
-        genai.configure(api_key=gemini_api_key)
-        model = genai.GenerativeModel("gemini-1.5-flash")
+        from google import genai
+        client = genai.Client(api_key=gemini_api_key)
 
         prompt = f"""
 Analyse this resume and return ONLY a valid JSON object (no markdown, no explanation):
@@ -55,7 +54,10 @@ Analyse this resume and return ONLY a valid JSON object (no markdown, no explana
 Resume:
 {text[:5000]}
 """
-        response = model.generate_content(prompt)
+        response = client.models.generate_content(
+            model='gemini-1.5-flash-8b',
+            contents=prompt
+        )
         raw = response.text or ""
 
         # Parse JSON

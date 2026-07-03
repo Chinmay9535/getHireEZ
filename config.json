@@ -22,7 +22,11 @@
     "min_match_percent": 50,
     "batch_year": 2027
   },
-  "watchlist_companies": [],
+  "watchlist_companies": [
+    "Deloitte",
+    "Accenture",
+    "Stripe"
+  ],
   "enabled_sources": {
     "linkedin": true,
     "indeed": true,

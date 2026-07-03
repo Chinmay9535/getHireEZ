@@ -11,6 +11,8 @@ jobs:
   hunt-jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    permissions:
+      contents: write
 
     steps:
       # ── 1. Checkout repo ────────────────────────────────────

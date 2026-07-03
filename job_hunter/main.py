@@ -247,7 +247,7 @@ def run():
     tips = []
     if all_missing_skills and resume_profiles_data:
         _, _, first_resume = resume_profiles_data[0]
-        tips = generate_resume_tips(all_missing_skills, first_resume, gemini_key)
+        tips = generate_resume_tips(all_missing_skills, first_resume, openrouter_key)
 
     # ── Build Excel ──────────────────────────────────────────
     report_path = PROJECT_ROOT / "data" / "reports" / f"jobs_{today}.xlsx"

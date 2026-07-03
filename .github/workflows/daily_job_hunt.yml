@@ -1,0 +1,53 @@
+name: 🤖 OpportunityBot — Daily Job Hunt
+
+on:
+  schedule:
+    # 7:00 AM IST = 1:30 AM UTC
+    - cron: '30 1 * * *'
+  workflow_dispatch:
+    # Also allows manual trigger from GitHub Actions tab
+
+jobs:
+  hunt-jobs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      # ── 1. Checkout repo ────────────────────────────────────
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      # ── 2. Set up Python ────────────────────────────────────
+      - name: 🐍 Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      # ── 3. Install dependencies ─────────────────────────────
+      - name: 📦 Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # ── 4. Run the bot ──────────────────────────────────────
+      - name: 🚀 Run OpportunityBot
+        env:
+          GEMINI_API_KEY:     ${{ secrets.GEMINI_API_KEY }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          GH_PAT:             ${{ secrets.GH_PAT }}
+        run: python job_hunter/main.py
+
+      # ── 5. Commit updated DB and report ─────────────────────
+      - name: 💾 Commit updated data
+        if: always()
+        run: |
+          git config user.name  "OpportunityBot"
+          git config user.email "bot@opportunitybot.local"
+          git add data/seen_jobs.db data/reports/ || true
+          git diff --cached --quiet || git commit -m "🤖 Bot run: $(date -u '+%Y-%m-%d %H:%M UTC')"
+          git push || echo "Nothing to push"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

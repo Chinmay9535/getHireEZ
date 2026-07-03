@@ -1,0 +1,34 @@
+{
+  "profile": {
+    "name": "",
+    "branch": "",
+    "graduation_year": 2027,
+    "college": ""
+  },
+  "email": {
+    "sender_email": "",
+    "recipient_email": "",
+    "send_time_ist": "07:00"
+  },
+  "preferences": {
+    "locations": ["Bengaluru"],
+    "job_types": ["Internship", "Full-time"],
+    "min_salary_lpa": 0,
+    "min_match_percent": 40,
+    "batch_year": 2027
+  },
+  "watchlist_companies": [],
+  "enabled_sources": {
+    "linkedin": true,
+    "indeed": true,
+    "glassdoor": true,
+    "naukri": true,
+    "wellfound": true,
+    "internshala": true,
+    "unstop": true,
+    "yc_jobs": true,
+    "hackernews": true,
+    "cutshort": true
+  },
+  "resume_profiles": []
+}

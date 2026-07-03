@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.Python
+*.egg-info/
+dist/
+build/
+
+# Environment
+.env
+.env.local
+venv/
+env/
+.venv/
+
+# Secrets — NEVER commit these
+.streamlit/secrets.toml
+secrets.toml
+
+# Data (SQLite DB committed; reports NOT committed — too large)
+data/reports/*.xlsx
+
+# Resumes — committed to repo (needed by GitHub Actions)
+# resumes/*.pdf  ← DO NOT gitignore this line
+
+# OS
+.DS_Store
+Thumbs.db
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Keep data directory structure
+!data/.gitkeep
+!resumes/.gitkeep

@@ -1,0 +1,18 @@
+# ── Core ────────────────────────────────────────────────
+python-jobspy==1.1.80
+google-generativeai>=0.7.0
+PyMuPDF>=1.24.0
+openpyxl>=3.1.0
+PyGithub>=2.3.0
+
+# ── Web scraping ─────────────────────────────────────────
+requests>=2.31.0
+beautifulsoup4>=4.12.0
+lxml>=5.0.0
+
+# ── Streamlit app ─────────────────────────────────────────
+streamlit>=1.35.0
+
+# ── Utilities ─────────────────────────────────────────────
+tenacity>=8.2.0
+python-dotenv>=1.0.0

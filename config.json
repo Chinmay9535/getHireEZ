@@ -1,20 +1,25 @@
 {
   "profile": {
-    "name": "",
-    "branch": "",
+    "name": "Chinmay D M",
+    "branch": "CSE",
     "graduation_year": 2027,
     "college": ""
   },
   "email": {
     "sender_email": "",
-    "recipient_email": "",
+    "recipient_email": "chinmayofcl@gmail.com",
     "send_time_ist": "07:00"
   },
   "preferences": {
-    "locations": ["Bengaluru"],
-    "job_types": ["Internship", "Full-time"],
+    "locations": [
+      "Bengaluru"
+    ],
+    "job_types": [
+      "Internship",
+      "Full-time"
+    ],
     "min_salary_lpa": 0,
-    "min_match_percent": 40,
+    "min_match_percent": 50,
     "batch_year": 2027
   },
   "watchlist_companies": [],
@@ -26,9 +31,9 @@
     "wellfound": true,
     "internshala": true,
     "unstop": true,
+    "cutshort": true,
     "yc_jobs": true,
-    "hackernews": true,
-    "cutshort": true
+    "hackernews": true
   },
   "resume_profiles": []
 }

@@ -168,8 +168,8 @@ with st.form("upload_form", clear_on_submit=True):
                             extracted = {}
                     except Exception as e:
                         st.warning(f"Could not extract skills automatically: {e}")
-                else:
-                    st.info("Set OPENROUTER_API_KEY in Streamlit Secrets for automatic skill extraction.")
+            else:
+                st.info("Set OPENROUTER_API_KEY in Streamlit Secrets for automatic skill extraction.")
 
             # Save PDF locally
             safe_name = profile_name.lower().replace(" ", "_")

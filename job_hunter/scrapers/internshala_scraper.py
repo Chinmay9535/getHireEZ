@@ -29,13 +29,13 @@ def _slug(role: str) -> str:
 
 def _parse_card(card) -> Dict:
     try:
-        title = card.select_one(".profile")
-        company = card.select_one(".company_name a") or card.select_one(".company_name")
-        location = card.select_one(".location_link") or card.select_one(".locations")
-        stipend = card.select_one(".stipend")
+        title = card.select_one(".job-internship-name a") or card.select_one(".profile")
+        company = card.select_one(".company-name") or card.select_one(".company_name")
+        location = card.select_one(".row-1-item.locations span a") or card.select_one(".location_link")
+        stipend = card.select_one(".stipend") or card.select_one(".row-1-item span.stipend")
         duration = card.select_one(".item_body.duration")
-        link = card.select_one("a.view_detail_button") or card.select_one(".view-internship-button")
-        posted = card.select_one(".status-success")
+        link = card.select_one(".job-title-href") or card.select_one("a.view_detail_button")
+        posted = card.select_one(".status-success") or card.select_one(".status")
 
         url = ""
         if link and link.get("href"):

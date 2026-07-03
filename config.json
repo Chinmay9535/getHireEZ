@@ -25,15 +25,15 @@
   "watchlist_companies": [],
   "enabled_sources": {
     "linkedin": true,
-    "indeed": true,
+    "indeed": false,
     "glassdoor": true,
-    "naukri": true,
-    "wellfound": true,
-    "internshala": true,
-    "unstop": true,
-    "cutshort": true,
+    "naukri": false,
+    "wellfound": false,
+    "internshala": false,
+    "unstop": false,
+    "cutshort": false,
     "yc_jobs": true,
-    "hackernews": true,
+    "hackernews": false,
     "serpapi": true
   },
   "resume_profiles": [

@@ -36,7 +36,7 @@ def _safe_generate(client, prompt: str, retries: int = 5) -> str:
     for attempt in range(retries):
         try:
             response = client.chat.completions.create(
-                model="nvidia/nemotron-3-super-120b-a12b:free",
+                model="openrouter/free",
                 messages=[{"role": "user", "content": prompt}],
                 temperature=0.0
             )

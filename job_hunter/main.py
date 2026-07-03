@@ -25,7 +25,7 @@ sys.path.insert(0, str(PROJECT_ROOT))
 from job_hunter.config_loader import load_config, get_openrouter_api_key, get_gmail_app_password, ensure_dirs
 from job_hunter.deduplicator import filter_new_jobs, mark_jobs_seen, clear_old_entries
 from job_hunter.ai_engine import (
-    parse_resume, match_job_against_all_profiles,
+    parse_resume, batch_match_jobs_against_all_profiles,
     generate_resume_tips, extract_text_from_pdf,
 )
 from job_hunter.excel_builder import build_excel
@@ -213,22 +213,20 @@ def run():
         return
 
     # ── AI Matching ──────────────────────────────────────────
-    logger.info(f"[Main] Running Gemini matching for {len(new_jobs)} jobs…")
+    logger.info(f"[Main] Running AI batch matching for {len(new_jobs)} jobs…")
+    
+    try:
+        batch_match_jobs_against_all_profiles(new_jobs, resume_profiles_data, openrouter_key)
+    except Exception as e:
+        logger.error(f"[Main] Batch matching failed: {e}")
+
     matched_jobs = []
     all_missing_skills = []
 
-    for i, job in enumerate(new_jobs, 1):
-        logger.info(f"[Main] Matching {i}/{len(new_jobs)}: {job.get('company')} — {job.get('title')}")
-        try:
-            result = match_job_against_all_profiles(job, resume_profiles_data, openrouter_key)
-            job.update(result)
-
-            # Keep only jobs above minimum match threshold
-            if job.get("match_percentage", 0) >= config.min_match_percent:
-                matched_jobs.append(job)
-                all_missing_skills.extend(result.get("missing_skills", []))
-        except Exception as e:
-            logger.warning(f"[Main] Matching failed for {job.get('title')}: {e}")
+    for job in new_jobs:
+        if job.get("match_percentage", 0) >= config.min_match_percent:
+            matched_jobs.append(job)
+            all_missing_skills.extend(job.get("missing_skills", []))
 
     logger.info(f"[Main] {len(matched_jobs)} jobs passed {config.min_match_percent}% threshold")
 

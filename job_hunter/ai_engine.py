@@ -162,19 +162,24 @@ def parse_resume(pdf_path: Path, api_key: str) -> Dict:
 # Job–Resume Matching
 # ─────────────────────────────────────────────────────────────────
 
-JOB_MATCH_PROMPT = """
+BATCH_JOB_MATCH_PROMPT = """
 You are a professional talent acquisition expert. Evaluate how well this candidate's resume 
-matches the job description and return ONLY a valid JSON object (no markdown, no extra text).
+matches the given batch of jobs. Return ONLY a valid JSON object (no markdown, no extra text).
+The JSON MUST be a dictionary mapping the string index of the job to its match evaluation.
 
 JSON schema:
 {{
-  "match_percentage": <integer 0-100>,
-  "matched_skills": ["skills from resume that match the job"],
-  "missing_skills": ["important skills from job not found in resume"],
-  "why_good_fit": "1-2 sentence explanation of why this is/isn't a good fit",
-  "urgency": "HIGH | MEDIUM | LOW",
-  "recommended_action": "Apply immediately | Apply this week | Optional | Skip",
-  "job_tags": ["MNC" | "Startup" | "Product" | "BFSI" | "Remote" | "Internship"]
+  "0": {{
+    "match_percentage": <integer 0-100>,
+    "matched_skills": ["skills from resume that match the job"],
+    "missing_skills": ["important skills from job not found in resume"],
+    "why_good_fit": "1-2 sentence explanation of why this is/isn't a good fit",
+    "urgency": "HIGH | MEDIUM | LOW",
+    "recommended_action": "Apply immediately | Apply this week | Optional | Skip",
+    "job_tags": ["MNC" | "Startup" | "Product" | "BFSI" | "Remote" | "Internship"]
+  }},
+  "1": {{ ... }},
+  ...
 }}
 
 Scoring guide:
@@ -190,21 +195,19 @@ Candidate profile:
 - Projects/Experience: {projects}
 - Summary: {summary}
 
-Job:
-- Title: {title}
-- Company: {company}
-- Description: {description}
+Jobs to evaluate:
+{jobs_json}
 """
 
 
-def calculate_match(
-    job: Dict,
+def batch_calculate_match(
+    jobs_batch: List[Dict],
     resume_profile: Dict,
     api_key: str,
-) -> Dict:
+) -> Dict[str, Dict]:
     """
-    Score a single job against a single resume profile.
-    Returns match result dict.
+    Score a batch of jobs against a single resume profile.
+    Returns a dict mapping string indices (e.g. "0", "1") to their match result.
     """
     client = _get_client(api_key)
 
@@ -215,28 +218,39 @@ def calculate_match(
         resume_profile.get("tools", [])
     )
 
-    prompt = JOB_MATCH_PROMPT.format(
+    jobs_for_prompt = []
+    for idx, j in enumerate(jobs_batch):
+        jobs_for_prompt.append({
+            "index": str(idx),
+            "title": j.get("title", ""),
+            "company": j.get("company", ""),
+            "description": j.get("description", "")[:1000] # Cap length per job
+        })
+
+    prompt = BATCH_JOB_MATCH_PROMPT.format(
         skills=", ".join(all_skills[:40]),
         branch=resume_profile.get("branch", ""),
         projects="; ".join((resume_profile.get("projects", []) + resume_profile.get("internships", []))[:5]),
         summary=resume_profile.get("summary", "")[:400],
-        title=job.get("title", ""),
-        company=job.get("company", ""),
-        description=job.get("description", "")[:2000],
+        jobs_json=json.dumps(jobs_for_prompt, indent=2)
     )
 
     raw = _safe_generate(client, prompt)
-    result = _extract_json(raw)
-
-    if not result or "match_percentage" not in result:
-        # Fallback: simple keyword scoring
-        result = _fallback_keyword_score(job, resume_profile)
-
-    return result
+    result_dict = _extract_json(raw)
+    
+    if not isinstance(result_dict, dict):
+        result_dict = {}
+        
+    for idx_str in range(len(jobs_batch)):
+        key = str(idx_str)
+        if key not in result_dict or "match_percentage" not in result_dict[key]:
+            result_dict[key] = _fallback_keyword_score(jobs_batch[int(key)], resume_profile)
+            
+    return result_dict
 
 
 def _fallback_keyword_score(job: Dict, resume_profile: Dict) -> Dict:
-    """Simple keyword overlap score when Gemini fails."""
+    """Simple keyword overlap score when LLM fails."""
     all_skills = set(s.lower() for s in (
         resume_profile.get("technical_skills", []) +
         resume_profile.get("languages", []) +
@@ -261,36 +275,50 @@ def _fallback_keyword_score(job: Dict, resume_profile: Dict) -> Dict:
 # Multi-Resume Matching
 # ─────────────────────────────────────────────────────────────────
 
-def match_job_against_all_profiles(
-    job: Dict,
+def batch_match_jobs_against_all_profiles(
+    new_jobs: List[Dict],
     resume_profiles_data: List[Tuple[str, str, Dict]],  # (profile_id, profile_name, parsed_resume)
     api_key: str,
-) -> Dict:
+):
     """
-    Score a job against all resume profiles, return best match.
-    resume_profiles_data: list of (id, name, parsed_resume_dict)
+    Score all jobs against all resume profiles using batching.
+    Modifies new_jobs in place.
     """
-    best_result = None
-    best_score = -1
-    best_profile_name = ""
-
+    if not new_jobs:
+        return
+        
+    for job in new_jobs:
+        job["_best_score"] = -1
+        job["_best_result"] = None
+        job["_best_profile_name"] = ""
+        
+    BATCH_SIZE = 20
+        
     for profile_id, profile_name, resume_data in resume_profiles_data:
-        result = calculate_match(job, resume_data, api_key)
-        score = result.get("match_percentage", 0)
-
-        if score > best_score:
-            best_score = score
-            best_result = result
-            best_profile_name = profile_name
-
-        time.sleep(0.5)  # Small pause between API calls
-
-    if best_result is None:
-        best_result = {"match_percentage": 0, "matched_skills": [], "missing_skills": [],
-                       "why_good_fit": "", "urgency": "LOW", "recommended_action": "Skip", "job_tags": []}
-
-    best_result["matched_profile"] = best_profile_name
-    return best_result
+        for i in range(0, len(new_jobs), BATCH_SIZE):
+            batch = new_jobs[i:i+BATCH_SIZE]
+            
+            logger.info(f"[Main] Batch matching {i+1}-{i+len(batch)} of {len(new_jobs)} against '{profile_name}'...")
+            batch_results = batch_calculate_match(batch, resume_data, api_key)
+            
+            for idx, job in enumerate(batch):
+                result = batch_results.get(str(idx), {})
+                score = result.get("match_percentage", 0)
+                
+                if score > job["_best_score"]:
+                    job["_best_score"] = score
+                    job["_best_result"] = result
+                    job["_best_profile_name"] = profile_name
+                    
+    for job in new_jobs:
+        best_res = job.pop("_best_result", None)
+        if not best_res:
+             best_res = {"match_percentage": 0, "matched_skills": [], "missing_skills": [],
+                         "why_good_fit": "", "urgency": "LOW", "recommended_action": "Skip", "job_tags": []}
+        
+        job.update(best_res)
+        job["matched_profile"] = job.pop("_best_profile_name", "")
+        job.pop("_best_score", None)
 
 
 # ─────────────────────────────────────────────────────────────────

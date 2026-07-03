@@ -25,7 +25,8 @@ def _get_client(api_key: str):
         from openai import OpenAI
         _client = OpenAI(
             base_url="https://openrouter.ai/api/v1",
-            api_key=api_key
+            api_key=api_key,
+            timeout=45.0
         )
     return _client
 
@@ -42,11 +43,14 @@ def _safe_generate(client, prompt: str, retries: int = 5) -> str:
             time.sleep(2)  # OpenRouter free tier is ~20 RPM limit depending on model, let's be safe
             return response.choices[0].message.content or ""
         except Exception as e:
-            err = str(e)
-            if "429" in err or "rate limit" in err.lower():
+            err = str(e).lower()
+            if "429" in err or "rate limit" in err:
                 wait = (2 ** attempt) * 5
                 logger.warning(f"[OpenRouter] Rate limit. Waiting {wait}s…")
                 time.sleep(wait)
+            elif "timeout" in err:
+                logger.warning(f"[OpenRouter] Request timed out. Retrying attempt {attempt+1}/{retries}…")
+                time.sleep(2)
             else:
                 logger.error(f"[OpenRouter] Error: {e}")
                 return ""

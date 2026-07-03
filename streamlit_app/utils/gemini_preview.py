@@ -55,7 +55,7 @@ Resume:
 {text[:5000]}
 """
         response = client.models.generate_content(
-            model='gemini-1.5-flash-8b',
+            model='gemini-2.0-flash-lite',
             contents=prompt
         )
         raw = response.text or ""

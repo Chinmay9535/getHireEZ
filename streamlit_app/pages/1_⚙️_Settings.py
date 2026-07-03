@@ -104,7 +104,10 @@ with col2:
 st.markdown('<div class="section-header">🏆 Company Watchlist</div>', unsafe_allow_html=True)
 st.caption("Jobs from these companies always appear — even if match % is low.")
 
-current_watchlist = cfg.get("watchlist_companies", [])
+if "watchlist_companies" not in st.session_state:
+    st.session_state.watchlist_companies = cfg.get("watchlist_companies", [])
+
+current_watchlist = st.session_state.watchlist_companies
 
 # Tag-style input
 new_company = st.text_input("Add company to watchlist", placeholder="e.g. Google, Flipkart, Zepto")
@@ -123,8 +126,11 @@ if current_watchlist:
         with cols[i % 5]:
             if st.button(f"✕ {company}", key=f"rm_{i}"):
                 to_remove.append(company)
-    for c in to_remove:
-        current_watchlist.remove(c)
+    
+    if to_remove:
+        for c in to_remove:
+            current_watchlist.remove(c)
+        st.rerun()
 else:
     st.info("No companies in watchlist. Add them above.")
 

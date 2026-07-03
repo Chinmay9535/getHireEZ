@@ -35,7 +35,7 @@ checks = {
     "Recipient email configured":        email_set,
     "GH_PAT secret available":          bool(st.secrets.get("GH_PAT", "")),
     "GITHUB_REPO secret set":            bool(st.secrets.get("GITHUB_REPO", "")),
-    "GEMINI_API_KEY secret set":         bool(st.secrets.get("GEMINI_API_KEY", "")),
+    "OPENROUTER_API_KEY secret set":         bool(st.secrets.get("OPENROUTER_API_KEY", "")),
 }
 
 all_ready = True
@@ -94,7 +94,7 @@ with st.expander("🖥️ Alternatively: Run locally on your machine"):
     
     ```bash
     # From the OpportunityBot project root:
-    set GEMINI_API_KEY=your_key_here
+    set OPENROUTER_API_KEY=your_key_here
     set GMAIL_APP_PASSWORD=your_app_password
     python job_hunter/main.py
     ```

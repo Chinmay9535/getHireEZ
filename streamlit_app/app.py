@@ -147,7 +147,7 @@ st.markdown("---")
 st.subheader("🚀 Setup Checklist")
 
 checks = [
-    ("Gemini API Key set",           bool(st.secrets.get("GEMINI_API_KEY", "")) if hasattr(st, "secrets") else False),
+    ("OpenRouter API Key set",           bool(st.secrets.get("OPENROUTER_API_KEY", "")) if hasattr(st, "secrets") else False),
     ("Gmail App Password set",       bool(st.secrets.get("GMAIL_APP_PASSWORD", "")) if hasattr(st, "secrets") else False),
     ("Recipient email configured",   is_configured),
     ("At least 1 resume uploaded",   profiles_count > 0),

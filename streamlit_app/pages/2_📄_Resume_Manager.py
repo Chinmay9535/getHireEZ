@@ -152,24 +152,24 @@ with st.form("upload_form", clear_on_submit=True):
         elif uploaded_file is None:
             st.error("Please upload a PDF resume.")
         else:
-            with st.spinner("📖 Extracting skills with Gemini AI…"):
-                pdf_bytes = uploaded_file.read()
+            pdf_bytes = uploaded_file.read()
 
-                # Try to get Gemini key
-                gemini_key = st.secrets.get("GEMINI_API_KEY", "")
-                extracted = {}
+            # Try to get OpenRouter key
+            openrouter_key = st.secrets.get("OPENROUTER_API_KEY", "")
+            extracted = {}
 
-                if gemini_key:
+            if openrouter_key:
+                with st.spinner("✨ OpenRouter is analyzing your resume..."):
                     try:
-                        from utils.gemini_preview import extract_skills_preview
-                        extracted = extract_skills_preview(pdf_bytes, gemini_key)
+                        from utils.llm_preview import extract_skills_preview
+                        extracted = extract_skills_preview(pdf_bytes, openrouter_key)
                         if extracted.get("error"):
                             st.warning(f"Skill extraction issue: {extracted['error']}")
                             extracted = {}
                     except Exception as e:
                         st.warning(f"Could not extract skills automatically: {e}")
                 else:
-                    st.info("Set GEMINI_API_KEY in Streamlit Secrets for automatic skill extraction.")
+                    st.info("Set OPENROUTER_API_KEY in Streamlit Secrets for automatic skill extraction.")
 
             # Save PDF locally
             safe_name = profile_name.lower().replace(" ", "_")

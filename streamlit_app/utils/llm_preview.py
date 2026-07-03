@@ -1,5 +1,5 @@
 """
-gemini_preview.py
+llm_preview.py
 Used by the Streamlit app to extract skills from a resume PDF 
 in real-time as the user uploads it, giving instant feedback.
 """
@@ -12,7 +12,7 @@ from typing import Dict, List
 logger = logging.getLogger(__name__)
 
 
-def extract_skills_preview(pdf_bytes: bytes, gemini_api_key: str) -> Dict:
+def extract_skills_preview(pdf_bytes: bytes, openrouter_api_key: str) -> Dict:
     """
     Extract key info from a resume PDF for preview in the app.
     Returns structured data without saving to disk.
@@ -29,10 +29,13 @@ def extract_skills_preview(pdf_bytes: bytes, gemini_api_key: str) -> Dict:
     if not text.strip():
         return {"error": "PDF appears to be empty or image-only (no extractable text)"}
 
-    # ── Call Gemini ──────────────────────────────────────────
+    # ── Call OpenRouter ──────────────────────────────────────────
     try:
-        from google import genai
-        client = genai.Client(api_key=gemini_api_key)
+        from openai import OpenAI
+        client = OpenAI(
+            base_url="https://openrouter.ai/api/v1",
+            api_key=openrouter_api_key
+        )
 
         prompt = f"""
 Analyse this resume and return ONLY a valid JSON object (no markdown, no explanation):
@@ -54,15 +57,21 @@ Analyse this resume and return ONLY a valid JSON object (no markdown, no explana
 Resume:
 {text[:5000]}
 """
-        response = client.models.generate_content(
-            model='gemini-2.0-flash-lite',
-            contents=prompt
+        response = client.chat.completions.create(
+            model='nvidia/nemotron-3-super-120b-a12b:free',
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.0
         )
-        raw = response.text or ""
+        raw = response.choices[0].message.content or ""
 
         # Parse JSON
         parsed = {}
         try:
+            # Strip markdown json blocks if returned
+            if raw.startswith("```json"):
+                raw = raw.replace("```json", "", 1)
+                if raw.endswith("```"):
+                    raw = raw[:-3]
             parsed = json.loads(raw.strip())
         except Exception:
             match = re.search(r"\{.*\}", raw, re.DOTALL)
@@ -72,7 +81,7 @@ Resume:
                 except Exception:
                     pass
 
-        return parsed if parsed else {"error": "Gemini returned no structured data"}
+        return parsed if parsed else {"error": "OpenRouter returned no structured data"}
 
     except Exception as e:
-        return {"error": f"Gemini API error: {e}"}
+        return {"error": f"OpenRouter API error: {e}"}

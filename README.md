@@ -11,7 +11,7 @@ and emails you a color-coded Excel report — all automatically, completely free
 | Feature | Details |
 |---------|---------|
 | 🔍 10+ Job Sources | LinkedIn, Indeed, Glassdoor, Naukri, Wellfound, Internshala, Unstop, YC Jobs, HackerNews, Cutshort |
-| 🧠 AI Matching | Gemini 1.5 Flash scores every job against your resume (0–100%) |
+| 🧠 AI Matching | **AI Resume Parsing**: Extracts 15+ skills from your PDF using **OpenRouter (`nvidia/nemotron-3-super-120b-a12b:free`)**. scores every job against your resume (0–100%) |
 | 📄 Multi-Resume | Upload different resumes for different roles (SDE, ML, etc.) |
 | 📊 Excel Report | 4-sheet workbook: Jobs, Skills Gap, Watchlist, Summary |
 | 📧 Daily Email | Automated Gmail delivery at your chosen time |
@@ -32,9 +32,9 @@ cd opportunitybot
 ### Step 2 — Add GitHub Secrets
 Go to your repo → **Settings** → **Secrets and variables** → **Actions** → **New repository secret**
 
-| Secret Name | Value | Where to get |
-|-------------|-------|-------------|
-| `GEMINI_API_KEY` | Your API key | [aistudio.google.com](https://aistudio.google.com) (free) |
+| Secret Name | Description | Where to get it |
+| :--- | :--- | :--- |
+| `OPENROUTER_API_KEY` | Your API key | [openrouter.ai](https://openrouter.ai) |
 | `GMAIL_APP_PASSWORD` | 16-char app password | Google Account → Security → App Passwords |
 | `GH_PAT` | Personal Access Token | GitHub → Settings → Developer Settings → PAT (repo + workflow scopes) |
 
@@ -46,8 +46,8 @@ Go to your repo → **Settings** → **Secrets and variables** → **Actions** �
 
 5. After deploy → app **⋮ menu** → **Settings** → **Secrets**, paste:
 ```toml
-GEMINI_API_KEY = "your-key"
-GMAIL_APP_PASSWORD = "your-16-char-password"
+OPENROUTER_API_KEY = "your-key"
+GMAIL_APP_PASSWORD = "your-app-password"
 GH_PAT = "ghp_yourtoken"
 GITHUB_REPO = "yourusername/opportunitybot"
 ```

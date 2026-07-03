@@ -165,13 +165,13 @@ with st.expander("ℹ️ How to set your API keys securely"):
 
 1. **GitHub Repository Secrets** (used by GitHub Actions):
    - Go to your repo → **Settings** → **Secrets and variables** → **Actions**
-   - Add: `GEMINI_API_KEY`, `GMAIL_APP_PASSWORD`, `GH_PAT`
+   - Add: `OPENROUTER_API_KEY`, `GMAIL_APP_PASSWORD`, `GH_PAT`
 
 2. **Streamlit Cloud Secrets** (used by this web app):
    - Go to [share.streamlit.io](https://share.streamlit.io) → Your app → **⋮ menu** → **Settings** → **Secrets**
    - Add in TOML format:
    ```toml
-   GEMINI_API_KEY = "your-key-here"
+   OPENROUTER_API_KEY = "your-key-here"
    GMAIL_APP_PASSWORD = "your-16-char-password"
    GH_PAT = "ghp_yourpersonalaccesstoken"
    GITHUB_REPO = "yourusername/opportunitybot"

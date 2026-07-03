@@ -104,10 +104,11 @@ def load_config() -> Config:
     return cfg
 
 
-def get_gemini_api_key() -> str:
-    key = os.environ.get("GEMINI_API_KEY", "")
+def get_openrouter_api_key() -> str:
+    """Fetch OPENROUTER_API_KEY from environment."""
+    key = os.environ.get("OPENROUTER_API_KEY", "")
     if not key:
-        raise EnvironmentError("GEMINI_API_KEY environment variable not set.")
+        raise EnvironmentError("OPENROUTER_API_KEY environment variable not set.")
     return key
 
 

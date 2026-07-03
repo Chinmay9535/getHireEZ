@@ -35,7 +35,7 @@ jobs:
       # ── 4. Run the bot ──────────────────────────────────────
       - name: 🚀 Run OpportunityBot
         env:
-          GEMINI_API_KEY:     ${{ secrets.GEMINI_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
           GH_PAT:             ${{ secrets.GH_PAT }}
         run: python job_hunter/main.py

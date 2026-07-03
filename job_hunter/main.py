@@ -22,9 +22,9 @@ logger = logging.getLogger("OpportunityBot")
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from job_hunter.config_loader import load_config, get_gemini_api_key, get_gmail_app_password, ensure_dirs
+from job_hunter.config_loader import load_config, get_openrouter_api_key, get_gmail_app_password, ensure_dirs
 from job_hunter.deduplicator import filter_new_jobs, mark_jobs_seen, clear_old_entries
-from job_hunter.gemini_engine import (
+from job_hunter.ai_engine import (
     parse_resume, match_job_against_all_profiles,
     generate_resume_tips, extract_text_from_pdf,
 )
@@ -133,7 +133,7 @@ def run_scrapers(config, roles: list) -> list:
     return all_jobs
 
 
-def load_resume_profiles(config, gemini_key: str):
+def load_resume_profiles(config, openrouter_key: str):
     """Load and parse all resume profiles."""
     parsed_profiles = []
     for profile_cfg in config.resume_profiles:
@@ -143,7 +143,7 @@ def load_resume_profiles(config, gemini_key: str):
             continue
 
         logger.info(f"[Main] Parsing resume: {profile_cfg.name}")
-        parsed = parse_resume(pdf_path, gemini_key)
+        parsed = parse_resume(pdf_path, openrouter_key)
         if not parsed.get("error"):
             parsed_profiles.append((profile_cfg.id, profile_cfg.name, parsed))
         else:
@@ -174,7 +174,7 @@ def run():
         sys.exit(1)
 
     try:
-        gemini_key = get_gemini_api_key()
+        openrouter_key = get_openrouter_api_key()
         gmail_pwd  = get_gmail_app_password()
     except EnvironmentError as e:
         logger.error(str(e))
@@ -185,7 +185,7 @@ def run():
         sys.exit(1)
 
     # ── Load resume profiles ─────────────────────────────────
-    resume_profiles_data = load_resume_profiles(config, gemini_key)
+    resume_profiles_data = load_resume_profiles(config, openrouter_key)
     if not resume_profiles_data:
         logger.error("No valid resumes found. Check files in resumes/ folder.")
         sys.exit(1)
@@ -220,7 +220,7 @@ def run():
     for i, job in enumerate(new_jobs, 1):
         logger.info(f"[Main] Matching {i}/{len(new_jobs)}: {job.get('company')} — {job.get('title')}")
         try:
-            result = match_job_against_all_profiles(job, resume_profiles_data, gemini_key)
+            result = match_job_against_all_profiles(job, resume_profiles_data, openrouter_key)
             job.update(result)
 
             # Keep only jobs above minimum match threshold

@@ -1,7 +1,7 @@
 """
-gemini_engine.py
+ai_engine.py
 Core AI engine powering resume parsing and job-resume alignment scoring.
-Uses Google Gemini 1.5 Flash 8B (super lite, fast, free tier).
+Uses OpenRouter (e.g., nvidia/nemotron-3-super-120b-a12b:free).
 """
 import json
 import time
@@ -22,30 +22,33 @@ _client = None
 def _get_client(api_key: str):
     global _client
     if _client is None:
-        from google import genai
-        _client = genai.Client(api_key=api_key)
+        from openai import OpenAI
+        _client = OpenAI(
+            base_url="https://openrouter.ai/api/v1",
+            api_key=api_key
+        )
     return _client
 
 
 def _safe_generate(client, prompt: str, retries: int = 5) -> str:
-    """Call Gemini with exponential backoff on rate-limit errors."""
+    """Call OpenRouter with exponential backoff on rate-limit errors."""
     for attempt in range(retries):
         try:
-            response = client.models.generate_content(
-                model="gemini-2.0-flash-lite",
-                contents=prompt
+            response = client.chat.completions.create(
+                model="nvidia/nemotron-3-super-120b-a12b:free",
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.0
             )
-            # Free tier allows 15 RPM. We use 10 RPM (6s sleep) to be extra safe
-            time.sleep(6) 
-            return response.text or ""
+            time.sleep(2)  # OpenRouter free tier is ~20 RPM limit depending on model, let's be safe
+            return response.choices[0].message.content or ""
         except Exception as e:
             err = str(e)
-            if "429" in err or "RESOURCE_EXHAUSTED" in err:
-                wait = (2 ** attempt) * 10  # 10s, 20s, 40s, 80s
-                logger.warning(f"[Gemini] Rate limit (15 RPM). Waiting {wait}s…")
+            if "429" in err or "rate limit" in err.lower():
+                wait = (2 ** attempt) * 5
+                logger.warning(f"[OpenRouter] Rate limit. Waiting {wait}s…")
                 time.sleep(wait)
             else:
-                logger.error(f"[Gemini] Error: {e}")
+                logger.error(f"[OpenRouter] Error: {e}")
                 return ""
     return ""
 

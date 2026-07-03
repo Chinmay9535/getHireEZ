@@ -35,5 +35,22 @@
     "yc_jobs": true,
     "hackernews": true
   },
-  "resume_profiles": []
+  "resume_profiles": [
+    {
+      "id": "0ccabaeb-78cf-4aa9-8cd4-d6bae36ca17e",
+      "name": "Ai Engineer",
+      "filename": "ai_engineer_497028.pdf",
+      "target_roles": [
+        "Ai engineer",
+        "SDE",
+        "Data Analyst",
+        "Data Engineer",
+        "Engineering Trinee",
+        "Techincal intern"
+      ],
+      "extracted_skills": [],
+      "extracted_full": {},
+      "last_updated": "2026-07-03"
+    }
+  ]
 }

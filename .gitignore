@@ -18,8 +18,8 @@ env/
 .streamlit/secrets.toml
 secrets.toml
 
-# Data (SQLite DB committed; reports NOT committed — too large)
-data/reports/*.xlsx
+# Data (SQLite DB committed, reports committed so History UI works)
+!data/reports/*.xlsx
 
 # Resumes — committed to repo (needed by GitHub Actions)
 # resumes/*.pdf  ← DO NOT gitignore this line

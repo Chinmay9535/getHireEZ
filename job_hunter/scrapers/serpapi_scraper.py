@@ -63,7 +63,7 @@ def scrape_serpapi(roles: List[str], locations: List[str], api_key: str) -> List
             for page in range(2):
                 params["start"] = page * 10
                 try:
-                    resp = requests.get(SERPAPI_ENDPOINT, params=params, timeout=20)
+                    resp = requests.get(SERPAPI_ENDPOINT, params=params, timeout=45)
                     if resp.status_code != 200:
                         logger.warning(f"[SerpAPI] HTTP {resp.status_code}: {resp.text}")
                         break

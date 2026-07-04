@@ -25,7 +25,8 @@
   "watchlist_companies": [
     "Deloitte",
     "Accenture",
-    "Stripe"
+    "Stripe",
+    "Google"
   ],
   "enabled_sources": {
     "linkedin": true,

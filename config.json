@@ -47,8 +47,10 @@
       "name": "Ai Engineer",
       "filename": "ai_engineer_497028.pdf",
       "target_roles": [
+        "AI intern",
+        "Engineering Trainee",
         "intern",
-        "Engineering Trainee"
+        "data science intern"
       ],
       "extracted_skills": [],
       "extracted_full": {},
